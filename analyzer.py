@@ -14,7 +14,7 @@ def parse(file_name):
     range_line_info = range_line.replace(",", ".").split("	")
     max_rx = float(range_line_info[1][:-2])
     # range / 10 + 1 -> for greater than max_rx
-    rx_interval = [0 for i in range(int(round(max_rx / 10)) + 1)]
+    rx_interval = [0 for i in range(int(round(max_rx / 10)))]
 
     # Units Read
     units = []  # list of tuples: (id, name)
@@ -34,6 +34,15 @@ def parse(file_name):
 
     # Coords read
     # coords = []  # list of Coords objects
+
+    # Number rx above max
+    rx_above_max = 0
+
+    # Number rx below zero
+    rx_below_zero = 0
+
+    # Contains all rx values
+    rx_values = []
 
     # Until the end of the file
     while True:
@@ -55,27 +64,30 @@ def parse(file_name):
 
         # Rx_interval update
         rx_int = float(cl_s[2].replace(",", "."))
+        rx_values.append(rx_int)
 
-        # Negative values are ignored and
-        # values above the max go tho the last array index
-        if rx_int >= 0 and rx_int < max_rx:
+        if rx_int >= max_rx:
+            # Values above max are separated
+            rx_above_max = rx_above_max + 1
+        elif rx_int < 0:
+            # Negative values are separated
+            rx_below_zero = rx_below_zero + 1
+        else:
+            # Values in bounds
             index = int(rx_int // 10)
             rx_interval[index] = rx_interval[index] + 1
 
-        if rx_int >= max_rx:
-            index = len(rx_interval) - 1
-            rx_interval[index] = rx_interval[index] + 1
-
     # Prints results
-    print("Max RX")
-    print(max_rx)
+    print("Max Rx:" + str(max_rx))
 
-    print("RX Interval")
+    print("Number rx below 0: " + str(rx_below_zero))
+    print("RX Interval: ")
     print(rx_interval)
+    print("Number rx above max: " + str(rx_above_max))
 
     print("UNITS")
     print(units)
-    print("Best Units")
+    print("Best Units: ")
     print(best_units)
 
     # print("Some coords")
