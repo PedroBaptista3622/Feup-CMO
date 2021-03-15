@@ -2,12 +2,12 @@ import sys
 import matplotlib.pyplot as plt
 
 
-class Coord:
-    def __init__(self, lat, long, rx, best_unit):
-        self.lat = lat
-        self.long = long
-        self.rx = rx
-        self.best_unit = best_unit
+# class Coord:
+#     def __init__(self, lat, long, rx, best_unit):
+#         self.lat = lat
+#         self.long = long
+#         self.rx = rx
+#         self.best_unit = best_unit
 
 
 def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
@@ -50,6 +50,9 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     # Contains all rx values
     all_rx_values = []
 
+    # Contains all best units
+    # all_best_units = []
+
     # Until the end of the file
     while True:
         # Structure: Latitude	Longitude	Rx(dB)	Best unit
@@ -61,8 +64,9 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
             break
 
         # Increments frequency_best_units list
-        best_unit_index = int(cl_s[3])
-        frequency_best_units[best_unit_index] = frequency_best_units[best_unit_index] + 1
+        current_best_unit = int(cl_s[3])
+        frequency_best_units[current_best_unit] = frequency_best_units[current_best_unit] + 1
+        # all_best_units.append(current_best_unit)
 
         # Rx_interval update
         rx_float = float(cl_s[2].replace(",", "."))
@@ -95,12 +99,13 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
 
     # ========== Plot Section
 
+    # Rx Histogram
+
     # setting the ranges and no. of intervals
-    range_x = (plot_min_rx, plot_max_rx)
-    bins = plot_number_bins
+    range_rx = (plot_min_rx, plot_max_rx)
 
     # plotting a histogram
-    plt.hist(all_rx_values, bins, range_x, color='green',
+    plt.hist(all_rx_values, plot_number_bins, range_rx, color='green',
              histtype='bar', rwidth=0.8)
 
     # x-axis label
@@ -109,6 +114,31 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     plt.ylabel('Number of Entries')
     # plot title
     plt.title('Frequency of Rx Values')
+
+    # function to show the plot
+    plt.show()
+
+    # Best units Bar chart
+
+    # x-coordinates of left sides of bars
+    left = [1, 2, 3, 4, 5]
+
+    # labels for bars
+    tick_label = ['None']
+    for unit_tuple in units:
+        label = unit_tuple[0] + ": " + unit_tuple[1]
+        tick_label.append(label)
+
+    # plotting a bar chart
+    plt.bar(left, frequency_best_units, tick_label=tick_label,
+            width=0.8, color='green')
+
+    # naming the x-axis
+    plt.xlabel('Unit Name')
+    # naming the y-axis
+    plt.ylabel('Number of Entries')
+    # plot title
+    plt.title('Number of times each unit is the best')
 
     # function to show the plot
     plt.show()
