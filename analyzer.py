@@ -1,3 +1,6 @@
+import sys
+
+
 class Coord:
     def __init__(self, lat, long, rx, best_unit):
         self.lat = lat
@@ -95,4 +98,7 @@ def parse(file_name):
 
 
 if __name__ == "__main__":
-    parse("All3.txt")
+    if len(sys.argv) > 2 or len(sys.argv) == 1:
+        print("Usage: " + sys.argv[0] + " <file name>")
+    else:
+        parse(sys.argv[1])
