@@ -35,9 +35,6 @@ def parse(file_name):
         unit_line = f.readline()
         unit_line_split = unit_line.split("	")
 
-    # Coords read
-    # coords = []  # list of Coords objects
-
     # Number rx above max
     rx_above_max = 0
 
@@ -56,9 +53,6 @@ def parse(file_name):
         # End of file
         if current_line == "":
             break
-
-        # Saves coords for future use
-        # coords.append(Coord(cl_s[0], cl_s[1], cl_s[2], cl_s[3]))
 
         # Best_units update
         # Increments best units list
@@ -93,11 +87,9 @@ def parse(file_name):
     print("Best Units: ")
     print(best_units)
 
-    # print("Some coords")
-    # print(coords[0:10])
-
 
 if __name__ == "__main__":
+    # Invalid number of arguments
     if len(sys.argv) > 2 or len(sys.argv) == 1:
         print("Usage: " + sys.argv[0] + " <file name>")
     else:
