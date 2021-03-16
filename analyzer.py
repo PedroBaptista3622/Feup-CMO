@@ -2,17 +2,74 @@ import sys
 import matplotlib.pyplot as plt
 
 
-# class Coord:
-#     def __init__(self, lat, long, rx, best_unit):
-#         self.lat = lat
-#         self.long = long
-#         self.rx = rx
-#         self.best_unit = best_unit
+def printRxAnalysis(max_rx, rx_below_zero, rx_interval, rx_above_max, total_entries, plot_number_bins):
+    print("\n========= Rx Analysis")
+    print("Number Rx < 0: " + str(rx_below_zero) +
+          " (" + str((rx_below_zero/total_entries)*100) + "% )")
 
-# def getConversions(rx_value, pr_min, total_entries):
-#     # [0] ==> Pr = Pr_min + Rx
-#     # [1] ==> Percentage
-#     conversions = (pr_min + rx_value, )
+    bin_size = max_rx / plot_number_bins
+    # Print intervals
+    for i in range(len(rx_interval)):
+        current_interval = "[" + str(i*bin_size) + \
+            ", " + str((i+1)*bin_size) + "["
+        print(current_interval + ": " + str(rx_interval[i]) +
+              " (" + str((rx_interval[i]/total_entries)*100) + "% )")
+
+    print("Number Rx > " + str(max_rx) + ": " + str(rx_above_max) +
+          " (" + str((rx_above_max/total_entries)*100) + "% )")
+
+
+def printUnitAnalysis(units, frequency_best_units, total_entries):
+    print("\n========= Units Analysis")
+    for i in range(len(frequency_best_units)):
+        if i != 0:
+            print(str(units[i-1][0]) + " - " + str(units[i-1][1]) + ": " + str(frequency_best_units[i]) +
+                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
+        else:
+            print("0 - None: " + str(frequency_best_units[i]) +
+                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
+
+
+def plotRxHistogram(all_rx_values, plot_min_rx, plot_max_rx, plot_number_bins):
+    # setting the ranges and no. of intervals
+    range_rx = (plot_min_rx, plot_max_rx)
+
+    # plotting a histogram
+    plt.hist(all_rx_values, plot_number_bins, range_rx, color='green',
+             histtype='bar', rwidth=0.8)
+
+    # x-axis label
+    plt.xlabel('Rx(dB)')
+    # frequency label
+    plt.ylabel('Number of Entries')
+    # plot title
+    plt.title('Frequency of Rx Values')
+
+    return plt
+
+
+def plotUnitsBarChart(units, frequency_best_units):
+    # x-coordinates of left sides of bars
+    left = [i+1 for i in range(len(units) + 1)]
+
+    # labels for bars
+    tick_label = ['None']
+    for unit_tuple in units:
+        label = unit_tuple[0] + ": " + unit_tuple[1]
+        tick_label.append(label)
+
+    # plotting a bar chart
+    plt.bar(left, frequency_best_units, tick_label=tick_label,
+            width=0.8, color='green')
+
+    # naming the x-axis
+    plt.xlabel('Unit Name')
+    # naming the y-axis
+    plt.ylabel('Number of Entries')
+    # plot title
+    plt.title('Number of times each unit is the best')
+
+    return plt
 
 
 def analyze(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
@@ -89,79 +146,23 @@ def analyze(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
             index = int(rx_float // 10)
             rx_interval[index] = rx_interval[index] + 1
 
-    # ========== Result Printing Section
+    # ========== Analysis Printing Section
     total_entries = len(all_rx_values)
     print("========= Total entries: " + str(total_entries))
 
-    print("\n\n========= Rx Analysis")
-    print("Number Rx < 0: " + str(rx_below_zero) +
-          " (" + str((rx_below_zero/total_entries)*100) + "% )")
+    # === Rx Analysis
+    printRxAnalysis(max_rx, rx_below_zero, rx_interval,
+                    rx_above_max, total_entries, plot_number_bins)
 
-    bin_size = max_rx / plot_number_bins
-    # Print intervals
-    for i in range(len(rx_interval)):
-        current_interval = "[" + str(i*bin_size) + \
-            ", " + str((i+1)*bin_size) + "["
-        print(current_interval + ": " + str(rx_interval[i]) +
-              " (" + str((rx_interval[i]/total_entries)*100) + "% )")
-
-    print("Number Rx > " + str(max_rx) + ": " + str(rx_above_max) +
-          " (" + str((rx_above_max/total_entries)*100) + "% )")
-
-    print("\n\n========= Units Analysis")
-    for i in range(len(frequency_best_units)):
-        if i != 0:
-            print(str(units[i-1][0]) + " - " + str(units[i-1][1]) + ": " + str(frequency_best_units[i]) +
-                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
-        else:
-            print("0 - None: " + str(frequency_best_units[i]) +
-                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
-
-    # ========== Plot Section
-
-    # Rx Histogram
-
-    # setting the ranges and no. of intervals
-    range_rx = (plot_min_rx, plot_max_rx)
-
-    # plotting a histogram
-    plt.hist(all_rx_values, plot_number_bins, range_rx, color='green',
-             histtype='bar', rwidth=0.8)
-
-    # x-axis label
-    plt.xlabel('Rx(dB)')
-    # frequency label
-    plt.ylabel('Number of Entries')
-    # plot title
-    plt.title('Frequency of Rx Values')
-
-    # function to show the plot
+    plt = plotRxHistogram(all_rx_values, plot_min_rx,
+                          plot_max_rx, plot_number_bins)
     plt.show()
 
-    # Best units Bar chart
+    # === Unit Analysis
+    printUnitAnalysis(units, frequency_best_units, total_entries)
 
-    # x-coordinates of left sides of bars
-    left = [1, 2, 3, 4, 5]
-
-    # labels for bars
-    tick_label = ['None']
-    for unit_tuple in units:
-        label = unit_tuple[0] + ": " + unit_tuple[1]
-        tick_label.append(label)
-
-    # plotting a bar chart
-    plt.bar(left, frequency_best_units, tick_label=tick_label,
-            width=0.8, color='green')
-
-    # naming the x-axis
-    plt.xlabel('Unit Name')
-    # naming the y-axis
-    plt.ylabel('Number of Entries')
-    # plot title
-    plt.title('Number of times each unit is the best')
-
-    # function to show the plot
-    # plt.show()
+    plt = plotUnitsBarChart(units, frequency_best_units)
+    plt.show()
 
 
 if __name__ == "__main__":
