@@ -9,8 +9,13 @@ import matplotlib.pyplot as plt
 #         self.rx = rx
 #         self.best_unit = best_unit
 
+# def getConversions(rx_value, pr_min, total_entries):
+#     # [0] ==> Pr = Pr_min + Rx
+#     # [1] ==> Percentage
+#     conversions = (pr_min + rx_value, )
 
-def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
+
+def analyze(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     f = open("CoverageResults/" + file_name, "r")
 
     # ========== Parsing Section
@@ -19,9 +24,10 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     range_line = f.readline()
     range_line_info = range_line.replace(",", ".").split("	")
     max_rx = float(range_line_info[1][:-2])
+    pr_min = float(range_line_info[2][:-4])
 
     # rx_interval ==> [0, max_rx/plot_number_bins[ , (...) , [max_rx, 0[
-    rx_interval = [0 for i in range(int(round(max_rx / plot_number_bins)))]
+    rx_interval = [0 for i in range(plot_number_bins)]
 
     # Units Read
     units = []  # list of tuples: (id, name)
@@ -84,18 +90,32 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
             rx_interval[index] = rx_interval[index] + 1
 
     # ========== Result Printing Section
+    total_entries = len(all_rx_values)
+    print("========= Total entries: " + str(total_entries))
 
-    print("Max Rx:" + str(max_rx))
+    print("\n\n========= Rx Analysis")
+    print("Number Rx < 0: " + str(rx_below_zero) +
+          " (" + str((rx_below_zero/total_entries)*100) + "% )")
 
-    print("Number rx below 0: " + str(rx_below_zero))
-    print("RX Interval: ")
-    print(rx_interval)
-    print("Number rx above max: " + str(rx_above_max))
+    bin_size = max_rx / plot_number_bins
+    # Print intervals
+    for i in range(len(rx_interval)):
+        current_interval = "[" + str(i*bin_size) + \
+            ", " + str((i+1)*bin_size) + "["
+        print(current_interval + ": " + str(rx_interval[i]) +
+              " (" + str((rx_interval[i]/total_entries)*100) + "% )")
 
-    print("UNITS")
-    print(units)
-    print("Frequency Best Units: ")
-    print(frequency_best_units)
+    print("Number Rx > " + str(max_rx) + ": " + str(rx_above_max) +
+          " (" + str((rx_above_max/total_entries)*100) + "% )")
+
+    print("\n\n========= Units Analysis")
+    for i in range(len(frequency_best_units)):
+        if i != 0:
+            print(str(units[i-1][0]) + " - " + str(units[i-1][1]) + ": " + str(frequency_best_units[i]) +
+                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
+        else:
+            print("0 - None: " + str(frequency_best_units[i]) +
+                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
 
     # ========== Plot Section
 
@@ -141,15 +161,14 @@ def parse(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     plt.title('Number of times each unit is the best')
 
     # function to show the plot
-    plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
-    print(sys.argv)
     # Invalid number of arguments
     if len(sys.argv) != 5:
         print(
             "Usage: " + sys.argv[0] + " <file name> <plot min rx> <plot max rx> <plot number bins>")
     else:
-        parse(sys.argv[1], float(sys.argv[2]),
-              float(sys.argv[3]), int(sys.argv[4]))
+        analyze(sys.argv[1], float(sys.argv[2]),
+                float(sys.argv[3]), int(sys.argv[4]))
