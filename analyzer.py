@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def printRxAnalysis(max_rx, rx_below_zero, rx_interval, rx_above_max, total_entries, plot_number_bins):
     print("\n========= Rx Analysis")
     print("Number Rx < 0: " + str(rx_below_zero) +
-          " (" + str((rx_below_zero/total_entries)*100) + "% )")
+          " (" + str((rx_below_zero/total_entries)*100) + "%)")
 
     bin_size = max_rx / plot_number_bins
     # Print intervals
@@ -13,21 +13,17 @@ def printRxAnalysis(max_rx, rx_below_zero, rx_interval, rx_above_max, total_entr
         current_interval = "[" + str(i*bin_size) + \
             ", " + str((i+1)*bin_size) + "["
         print(current_interval + ": " + str(rx_interval[i]) +
-              " (" + str((rx_interval[i]/total_entries)*100) + "% )")
+              " (" + str((rx_interval[i]/total_entries)*100) + "%)")
 
     print("Number Rx > " + str(max_rx) + ": " + str(rx_above_max) +
-          " (" + str((rx_above_max/total_entries)*100) + "% )")
+          " (" + str((rx_above_max/total_entries)*100) + "%)")
 
 
 def printUnitAnalysis(units, frequency_best_units, total_entries):
     print("\n========= Units Analysis")
-    for i in range(len(frequency_best_units)):
-        if i != 0:
-            print(str(units[i-1][0]) + " - " + str(units[i-1][1]) + ": " + str(frequency_best_units[i]) +
-                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
-        else:
-            print("0 - None: " + str(frequency_best_units[i]) +
-                  " (" + str((frequency_best_units[i]/total_entries)*100) + "% )")
+    for x in frequency_best_units:
+        print(str(x) + " - " + str(units[x]) + ": " + str(frequency_best_units[x]) +
+              " (" + str((frequency_best_units[x]/total_entries)*100) + "%)")
 
 
 def plotRxHistogram(all_rx_values, plot_min_rx, plot_max_rx, plot_number_bins):
@@ -50,16 +46,16 @@ def plotRxHistogram(all_rx_values, plot_min_rx, plot_max_rx, plot_number_bins):
 
 def plotUnitsBarChart(units, frequency_best_units):
     # x-coordinates of left sides of bars
-    left = [i+1 for i in range(len(units) + 1)]
+    left = [i+1 for i in range(len(units))]
 
     # labels for bars
-    tick_label = ['None']
-    for unit_tuple in units:
-        label = unit_tuple[0] + ": " + unit_tuple[1]
+    tick_label = []
+    for x in units:
+        label = str(x) + ": " + units[x]
         tick_label.append(label)
 
     # plotting a bar chart
-    plt.bar(left, frequency_best_units, tick_label=tick_label,
+    plt.bar(left, list(frequency_best_units.values()), tick_label=tick_label,
             width=0.8, color='green')
 
     # naming the x-axis
@@ -87,10 +83,10 @@ def analyze(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     rx_interval = [0 for i in range(plot_number_bins)]
 
     # Units Read
-    units = []  # list of tuples: (id, name)
+    units = {0: "None"}  # list of tuples: (id, name)
 
     # frequency_best_units[2] ==> number of times unit 2 appears as the best unit in the file
-    frequency_best_units = [0]
+    frequency_best_units = {0: 0}
 
     unit_line = f.readline()
     unit_line_split = unit_line.split("	")
@@ -98,8 +94,8 @@ def analyze(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
     # while line != "Latitude	Longitude	Rx(dB)	Best unit" AKA Start of rx values
     while len(unit_line_split) != 4:
         # Adds a tuple with unit id and name to the units list
-        units.append((unit_line_split[1], unit_line_split[2]))
-        frequency_best_units.append(0)
+        units[int(unit_line_split[1])] = unit_line_split[2]
+        frequency_best_units[int(unit_line_split[1])] = 0
 
         unit_line = f.readline()
         unit_line_split = unit_line.split("	")
@@ -128,7 +124,8 @@ def analyze(file_name, plot_min_rx, plot_max_rx, plot_number_bins):
 
         # Increments frequency_best_units list
         current_best_unit = int(cl_s[3])
-        frequency_best_units[current_best_unit] = frequency_best_units[current_best_unit] + 1
+        frequency_best_units.update(
+            {current_best_unit: frequency_best_units[current_best_unit] + 1})
         # all_best_units.append(current_best_unit)
 
         # Rx_interval update
